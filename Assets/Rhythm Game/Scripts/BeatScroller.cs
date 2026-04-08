@@ -17,10 +17,10 @@ public class BeatScroller : MonoBehaviour
     {
         if (!hasStarted)
         {
-            if (Input.GetKeyDown(KeyCode.Space))
+           /* if (Input.GetKeyDown(KeyCode.Space))
             {
                 hasStarted = true;
-            }
+           }*/ 
         }
         else
         {
