@@ -12,6 +12,9 @@ public BeatScroller theBS;
 
 public static GameManager instance;
 
+public int currentScore;
+public int scorePerNote = 100;
+
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
@@ -38,6 +41,8 @@ public static GameManager instance;
     public void NoteHit()
     {
         Debug.Log ("Hit on time");
+
+        currentScore += scorePerNote;
     }
 
     public void NoteMissed()    
