@@ -15,6 +15,8 @@ public static GameManager instance;
 
 public int currentScore;
 public int scorePerNote = 100;
+public int scorePerGoodNote = 125;
+public int scorePerPerfectNote = 150;
 
 public int currentMultiplier;
 public int multiplierTracker;
@@ -65,8 +67,26 @@ public Text multiText;
 
         multiText.text = "Multiplier: x" + currentMultiplier;
 
-        currentScore += scorePerNote * currentMultiplier;
+       // currentScore += scorePerNote * currentMultiplier;
         scoreText.text = "Score: " + currentScore;
+    }
+
+    public void NormalHit()
+    {
+        currentScore += scorePerNote * currentMultiplier;
+        NoteHit();
+    }
+
+    public void GoodHit()
+    {
+        currentScore += scorePerGoodNote * currentMultiplier;
+        NoteHit();
+    }
+
+    public void PerfectHit()
+    {
+        currentScore += scorePerPerfectNote * currentMultiplier;
+        NoteHit();  
     }
 
     public void NoteMissed()    
