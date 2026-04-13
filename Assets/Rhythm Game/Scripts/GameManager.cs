@@ -25,15 +25,28 @@ public int[] multiplierThresholds;
 public Text scoreText;
 public Text multiText;
 
+public float totalNotes;
+public float normalHits;    
+public float goodHits;
+public float perfectHits;
+public float missedHits;
+
+public GameObject resultsScreen;
+public Text percentHitText, rankText, normalsText, goodsText, perfectsText, missesText, finalScoreText;
+
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
         instance = this;
+
         scoreText.text = "Score: 0";
         currentMultiplier = 1;
+
+        totalNotes = FindObjectsOfType<NoteObject>().Length;
     }
 
+ 
     // Update is called once per frame
     void Update()
     {
@@ -45,6 +58,50 @@ public Text multiText;
                 theBS.hasStarted = true;
 
                 theMusic.Play();
+            }
+        }
+        else
+        {
+            if (!theMusic.isPlaying && !resultsScreen.activeInHierarchy)
+            {
+                resultsScreen.SetActive(true);
+
+                normalsText.text = "" + normalHits;
+                goodsText.text = "" + goodHits;
+                perfectsText.text = "" + perfectHits;
+                missesText.text = "" + missedHits;
+
+                float totalHits = normalHits + goodHits + perfectHits;
+                float percentHit = (totalHits / totalNotes) * 100f;
+
+                percentHitText.text = percentHit.ToString("F1") + "%";
+
+                string rankVal = "F";
+
+                if (percentHit > 40)
+                {
+                    rankVal = "D";
+                    if (percentHit > 55)                
+                    {
+                        rankVal = "C";  
+                        if (percentHit > 70)                
+                        {
+                            rankVal = "B";  
+                            if (percentHit > 85)
+                            {
+                                rankVal = "A";  
+                                if (percentHit > 95)
+                                {               
+                                    rankVal = "S";  
+                                }
+                            }
+                        }
+                    }
+                }
+
+                rankText.text = rankVal;
+
+                finalScoreText.text = "" + currentScore;
             }
         }
         
@@ -75,18 +132,24 @@ public Text multiText;
     {
         currentScore += scorePerNote * currentMultiplier;
         NoteHit();
+
+        normalHits++;
     }
 
     public void GoodHit()
     {
         currentScore += scorePerGoodNote * currentMultiplier;
         NoteHit();
+
+        goodHits++;
     }
 
     public void PerfectHit()
     {
         currentScore += scorePerPerfectNote * currentMultiplier;
         NoteHit();  
+
+        perfectHits++;  
     }
 
     public void NoteMissed()    
@@ -97,5 +160,7 @@ public Text multiText;
         multiplierTracker = 0;
 
         multiText.text = "Multiplier: x" + currentMultiplier;
+
+        missedHits++;
     }
 }
