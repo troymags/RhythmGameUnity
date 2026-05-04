@@ -1,3 +1,9 @@
+// Base implementation adapted from [How To Make a Rhythm Game Tutorial]] Tutorial Series by [gamesplusjames]
+// URL: [https://www.youtube.com/watch?v=cZzf1FQQFA0&list=PLLPYMaP0tgFKZj5VG82316B63eet0Pvsv] (for part 1 of the series)
+// Modifications: CSV data logging added independently for dissertation research purposes - Leeiam Magsipoc
+
+using System.Collections.Generic;
+using System.IO;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -33,6 +39,16 @@ public float missedHits;
 
 public GameObject resultsScreen;
 public Text percentHitText, rankText, normalsText, goodsText, perfectsText, missesText, finalScoreText;
+
+private List<NoteData> noteDataLog = new List<NoteData>();
+private bool resultsSaved = false;
+
+private struct NoteData
+{
+    public float timeFromStart;     // When during the song this happened (seconds)
+    public string hitQuality;       // "Perfect", "Good", "Normal", or "Miss"
+    public float positionOffset;    // How far from perfect (Y position when hit)
+}
 
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
@@ -102,6 +118,12 @@ public Text percentHitText, rankText, normalsText, goodsText, perfectsText, miss
                 rankText.text = rankVal;
 
                 finalScoreText.text = "" + currentScore;
+
+                if (!resultsSaved)
+                {
+                    SaveDataToCSV(percentHit, rankVal);
+                    resultsSaved = true;
+                }
             }
         }
         
@@ -134,6 +156,7 @@ public Text percentHitText, rankText, normalsText, goodsText, perfectsText, miss
         NoteHit();
 
         normalHits++;
+        LogNote("Normal", 0f); 
     }
 
     public void GoodHit()
@@ -142,6 +165,7 @@ public Text percentHitText, rankText, normalsText, goodsText, perfectsText, miss
         NoteHit();
 
         goodHits++;
+        LogNote("Good", 0f);
     }
 
     public void PerfectHit()
@@ -150,6 +174,7 @@ public Text percentHitText, rankText, normalsText, goodsText, perfectsText, miss
         NoteHit();  
 
         perfectHits++;  
+        LogNote("Perfect", 0f);
     }
 
     public void NoteMissed()    
@@ -162,5 +187,40 @@ public Text percentHitText, rankText, normalsText, goodsText, perfectsText, miss
         multiText.text = "Multiplier: x" + currentMultiplier;
 
         missedHits++;
+        LogNote("Miss", 0f);
     }
+
+    private void LogNote(string quality, float offset)
+    {
+        noteDataLog.Add(new NoteData
+        {
+            timeFromStart = theMusic.time,  // Current playback time of the song
+            hitQuality = quality,
+            positionOffset = offset
+        });
+    }
+
+    private void SaveDataToCSV(float percentHit, string rank)
+    {
+        string fileName = $"RhythmData_{System.DateTime.Now:yyyyMMdd_HHmmss}.csv";
+        string path = Path.Combine(Application.persistentDataPath, fileName);
+
+        using (StreamWriter writer = new StreamWriter(path))
+        {
+            writer.WriteLine("=== SESSION SUMMARY ===");
+            writer.WriteLine("FinalScore,TotalNotes,Perfect,Good,Normal,Miss,AccuracyPercent,Rank");
+            writer.WriteLine($"{currentScore},{totalNotes},{perfectHits},{goodHits},{normalHits},{missedHits},{percentHit:F2},{rank}");
+            writer.WriteLine();
+
+            writer.WriteLine("=== PER-NOTE LOG ===");
+            writer.WriteLine("NoteNumber,TimeFromStart_s,HitQuality,PositionOffset");
+            for (int i = 0; i < noteDataLog.Count; i++)
+            {
+                var n = noteDataLog[i];
+                writer.WriteLine($"{i + 1},{n.timeFromStart:F3},{n.hitQuality},{n.positionOffset:F3}");
+            }
+        }
+        Debug.Log("Rhythm CSV saved to: " + path);
+    }
+
 }
